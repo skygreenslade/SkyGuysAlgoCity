@@ -3,53 +3,6 @@ import time
 import matplotlib.pyplot as plt
 from Lab_2_Problem_1 import evaluaterecurrence
 
-def recursivematrixmultiply(a, b):
-
-    #Check that matrix shapes are valid for multiplication
-    if (np.shape(a)[1] != np.shape(b)[0]):
-        print("Given matrix sizes cannot be multiplied together")
-        SystemExit()
-
-    aRows, aCols = np.shape(a)
-    bRows, bCols = np.shape(b)
-    C = np.matrix(np.zeros((aRows, bCols)))
-    cRows = aRows
-    cCols= bCols
-    if(np.size(a) == 1):
-        C = a[0,0]*b
-        return C
-    elif(np.size(b)==1):
-        C = a*b[0,0]
-    elif(aRows * aCols * bRows * bCols == 0):
-        return C
-    else:
-        aSplitX = aRows // 2 # what value to divide by rows for
-        aSplitY = aCols // 2 # the value to divide columns into
-        bSplitX = aSplitY    # where to divide matrix B columns
-        bSplitY = aSplitX    # where to divide matrix B rows
-        cSplitX, cSplitY = aSplitX, bSplitY # where the splits match up with the multiplied matrix
-
-        # divide input matrices into sub problems
-        A11 = a[0:aSplitX, 0:aSplitY]
-        A12 = a[0:aSplitX, aSplitY:aCols]
-        A21 = a[aSplitX:aRows, 0:aSplitY]
-        A22 = a[aSplitX:aRows, aSplitY:aCols]
-
-        B11 = b[0:bSplitX, 0:bSplitY]
-        B12 = b[0:bSplitX, bSplitY:bCols]
-        B21 = b[bSplitX:bRows, 0:bSplitY]
-        B22 = b[bSplitX:bRows, bSplitY:bCols]
-
-        # Call recursive function to solve each subsection of the matrix
-        C[0:cSplitX, 0:cSplitY] = recursivematrixmultiply(A11, B11) + recursivematrixmultiply(A12, B21)
-        C[0:cSplitX, cSplitY:cCols] = recursivematrixmultiply(A11, B12) + recursivematrixmultiply(A12, B22)
-        C[cSplitX:cRows, 0:cSplitY] = recursivematrixmultiply(A21, B11) + recursivematrixmultiply(A22, B21)
-        C[cSplitX:cRows, cSplitY:cCols] = recursivematrixmultiply(A21, B12) + recursivematrixmultiply(A22, B22)
-
-    # return solved matrix
-    return C
-
-
 def recursiveMatrixMultiply(a, b, c, aRowStart, aRowEnd, aColStart, aColEnd,
                             bRowStart, bRowEnd, bColStart, bColEnd, cRowStart, cRowEnd, cColStart, cColEnd):
 
@@ -63,12 +16,6 @@ def recursiveMatrixMultiply(a, b, c, aRowStart, aRowEnd, aColStart, aColEnd,
     aCols = aColEnd-aColStart
     bRows = bRowEnd-bRowStart
     bCols = bColEnd-bColStart
-
-    # define submatrices for result
-   # cRowStart = aRowStart
-   # cRowEnd = aRowEnd
-   # cColStart = bColStart
-   # cColEnd = bColEnd
 
     # if one matrix is 1x1, find result (base case)
     if(aRows == aCols == 1):
