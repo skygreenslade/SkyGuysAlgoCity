@@ -1,6 +1,8 @@
 import numpy as np
 import time
 import matplotlib.pyplot as plt
+from Lab_2_Problem_1 import evaluaterecurrence
+
 def recursivematrixmultiply(a, b):
 
     #Check that matrix shapes are valid for multiplication
@@ -48,8 +50,8 @@ def recursivematrixmultiply(a, b):
     return C
 
 
-def recursiveMatrixMultiply(a, b, aRowStart, aRowEnd, aColStart, aColEnd,
-                            bRowStart, bRowEnd, bColStart, bColEnd):
+def recursiveMatrixMultiply(a, b, c, aRowStart, aRowEnd, aColStart, aColEnd,
+                            bRowStart, bRowEnd, bColStart, bColEnd, cRowStart, cRowEnd, cColStart, cColEnd):
 
     # Check that matrix shapes are valid for multiplication
     if (np.shape(a)[1] != np.shape(b)[0]):
@@ -62,44 +64,51 @@ def recursiveMatrixMultiply(a, b, aRowStart, aRowEnd, aColStart, aColEnd,
     bRows = bRowEnd-bRowStart
     bCols = bColEnd-bColStart
 
-    #create matrix for result
-    C = np.matrix(np.zeros((aRowEnd-aRowStart, bColEnd-bColStart)))
-    cRows = aRowEnd-aRowStart
-    cCols= bColEnd-bColStart
+    # define submatrices for result
+   # cRowStart = aRowStart
+   # cRowEnd = aRowEnd
+   # cColStart = bColStart
+   # cColEnd = bColEnd
 
     # if one matrix is 1x1, find result (base case)
     if(aRows == aCols == 1):
-        C = a[aRowStart, aColStart]*b[bRowStart:bRowEnd, bColStart:bColEnd]
-        return C
+        c[cRowStart:cRowEnd, cColStart:cColEnd] = c[cRowStart:cRowEnd, cColStart:cColEnd] + a[aRowStart, aColStart]*b[bRowStart:bRowEnd, bColStart:bColEnd]
 
     elif (bRows == bCols == 1):
-        C = a[aRowStart:aRowEnd, aColStart:aColEnd]*b[bRowStart, bColStart]
-        return C
+        c[cRowStart:cRowEnd, cColStart:cColEnd] = c[cRowStart:cRowEnd, cColStart:cColEnd] + a[aRowStart:aRowEnd, aColStart:aColEnd]*b[bRowStart, bColStart]
 
     # catch occurrence of 0x0 matrix multiplication
     elif(aRows * aCols * bRows * bCols == 0):
-        return C
+        return
+        # do nothing
 
     # Divide Step
     else:
         aRowSplit = (aRows // 2) + aRowStart # index to divide matrix A rows
         aColSplit = (aCols // 2) + aColStart # index to divide matrix A columns
-        bRowSplit = (aCols // 2) + bRowStart # where to divide matrix B columns
-        bColSplit = (aRows // 2) + bColStart # where to divide matrix B rows
-        cRowSplit, cColSplit = (aRows // 2), (bCols // 2) # where the splits match up with the resultant matrix
+        bRowSplit = (bRows // 2) + bRowStart # where to divide matrix B columns
+        bColSplit = (bCols // 2) + bColStart # where to divide matrix B rows
+        cRowSplit = (aRows // 2) + cRowStart # where the splits match up with the resultant matrix
+        cColSplit = (bCols // 2) + cColStart
 
         # Call recursive function to solve each subsection of the matrix
-        C[0:cRowSplit, 0:cColSplit] = recursiveMatrixMultiply(a, b, aRowStart, aRowSplit, aColStart, aColSplit, bRowStart, bRowSplit, bColStart, bColSplit) \
-                                      + recursiveMatrixMultiply(a, b, aRowStart, aRowSplit, aColSplit, aColEnd, bRowSplit, bRowEnd, bColStart, bColSplit)
-        C[0:cRowSplit, cColSplit:cCols] = recursiveMatrixMultiply(a, b, aRowStart, aRowSplit, aColStart, aColSplit, bRowStart, bRowSplit, bColSplit, bColEnd) \
-                                          + recursiveMatrixMultiply(a, b, aRowStart, aRowSplit, aColSplit, aColEnd, bRowSplit, bRowEnd, bColSplit, bColEnd)
-        C[cRowSplit:cRows, 0:cColSplit] = recursiveMatrixMultiply(a, b, aRowSplit, aRowEnd, aColStart, aColSplit, bRowStart, bRowSplit, bColStart, bColSplit) \
-                                          + recursiveMatrixMultiply(a, b, aRowSplit, aRowEnd, aColSplit, aColEnd, bRowSplit, bRowEnd, bColStart, bColSplit)
-        C[cRowSplit:cRows, cColSplit:cCols] = recursiveMatrixMultiply(a, b, aRowSplit, aRowEnd, aColStart, aColSplit, bRowStart, bRowSplit, bColSplit, bColEnd) \
-                                              + recursiveMatrixMultiply(a, b, aRowSplit, aRowEnd, aColSplit, aColEnd, bRowSplit, bRowEnd, bColSplit, bColEnd)
+        #c11
+        recursiveMatrixMultiply(a, b, c, aRowStart, aRowSplit, aColStart, aColSplit, bRowStart, bRowSplit, bColStart, bColSplit,cRowStart, cRowSplit, cColStart, cColSplit)
+        recursiveMatrixMultiply(a, b, c, aRowStart, aRowSplit, aColSplit, aColEnd, bRowSplit, bRowEnd, bColStart, bColSplit, cRowStart, cRowSplit, cColStart, cColSplit)
 
-    # return solved matrix
-    return C
+        #c12
+        recursiveMatrixMultiply(a, b, c, aRowStart, aRowSplit, aColStart, aColSplit, bRowStart, bRowSplit, bColSplit, bColEnd, cRowStart, cRowSplit, cColSplit, cColEnd)
+        recursiveMatrixMultiply(a, b, c, aRowStart, aRowSplit, aColSplit, aColEnd, bRowSplit, bRowEnd, bColSplit, bColEnd, cRowStart, cRowSplit, cColSplit, cColEnd)
+
+        #c21
+        recursiveMatrixMultiply(a, b, c, aRowSplit, aRowEnd, aColStart, aColSplit, bRowStart, bRowSplit, bColStart, bColSplit, cRowSplit, cRowEnd, cColStart, cColSplit)
+        recursiveMatrixMultiply(a, b, c, aRowSplit, aRowEnd, aColSplit, aColEnd, bRowSplit, bRowEnd, bColStart, bColSplit, cRowSplit, cRowEnd, cColStart, cColSplit)
+
+        #c22
+        recursiveMatrixMultiply(a, b, c, aRowSplit, aRowEnd, aColStart, aColSplit, bRowStart, bRowSplit, bColSplit, bColEnd, cRowSplit, cRowEnd, cColSplit, cColEnd)
+        recursiveMatrixMultiply(a, b, c, aRowSplit, aRowEnd, aColSplit, aColEnd, bRowSplit, bRowEnd, bColSplit, bColEnd, cRowSplit, cRowEnd, cColSplit, cColEnd)
+
+    # return nothing
 
 
 # Brute-Force Matrix Multiplication used in Lab 1
@@ -122,13 +131,13 @@ def MM(A, B):
     if(np.shape(A)[1]!=np.shape(B)[0]):
         return -1
     C = np.zeros((np.shape(A)[0], np.shape(B)[1]))
-    #return recursivematrixmultiply(A, B)
-    return recursiveMatrixMultiply(A, B, 0, np.shape(A)[0], 0, np.shape(A)[1], 0, np.shape(B)[0], 0, np.shape(B)[1])
+    recursiveMatrixMultiply(A, B, C, 0, np.shape(A)[0], 0, np.shape(A)[1], 0, np.shape(B)[0], 0, np.shape(B)[1], 0, np.shape(A)[0], 0,  np.shape(B)[1])
+    return C
 
 #prompt user for matrix sizes
 ar = int(input("Enter A rows value\n"))
 ac = int(input("Enter A columns value (also B rows value)\n"))
-br = ar #int(input("Enter B rows value\n"))
+br = ac
 bc = int(input("Enter B columns value\n"))
 
 #generate random matrices for given matrix sizes
@@ -166,9 +175,11 @@ for i in range(8):
     startTime = time.time()
     myP = MM(a, b)
     myTime = time.time()-startTime
+
     startTime = time.time()
     npP = a * b
     npTime = time.time() - startTime
+
     if not np.array_equal(np.round(npP*1000), np.round(myP*1000)):
         continue
     myTimes.append(myTime)
@@ -184,12 +195,54 @@ for i in range(8):
     else:
         print("Product was incorrect")
 
+# calculate predicted times
+predicted = evaluaterecurrence('MM', sizes)
+scaledPred = []
+for num in predicted:
+    scaledPred.append(num*(10**-3.25))
+
+# closed-form solution times
+closed = []
+for num in sizes:
+    closed.append((num**3)*(10**-5.25))
 
 # plot results
 plt.plot(sizes, myTimes)
-#plt.plot(sizes, npTimes)
+plt.plot(sizes, scaledPred)
+plt.plot(sizes, closed)
 plt.xlabel("n")
-plt.ylabel("time(s)")
+plt.ylabel("time (s)")
 plt.title("My recursive Matrix Multiplication in python")
+plt.legend(['Actual Measured Times', 'Predicted Times', 'Closed-form Solution (n^3)'])
 plt.show()
 plt.figure()
+
+
+# compare recursive method to Lab1 brute force method
+recursiveTimes = []
+bruteForceTimes = []
+matrixSizes = []
+for n in range(1, 150, 20):
+    # Generate new matrices
+    a = np.matrix(np.random.rand(n, n))
+    b = np.matrix(np.random.rand(n, n))
+    matrixSizes.append(n)
+
+    #calculate times
+    startTime = time.time()
+    MM(a, b)
+    recursiveTimes.append(time.time() - startTime)
+
+    startTime = time.time()
+    lab1MM(a, b)
+    bruteForceTimes.append(time.time() - startTime)
+
+
+# plot results
+plt.plot(matrixSizes, recursiveTimes)
+plt.plot(matrixSizes, bruteForceTimes)
+plt.xlabel("n")
+plt.ylabel("time (s)")
+plt.title("Recursive Matrix Multiplication vs Brute Force Method")
+plt.legend(['Recursive Measured Times', 'Brute Force Measured Times'])
+plt.show()
